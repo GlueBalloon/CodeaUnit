@@ -1,3 +1,4 @@
+--by jakesankey
 CodeaUnit = class()
 
 function CodeaUnit:describe(feature, allTests)
@@ -8,14 +9,14 @@ function CodeaUnit:describe(feature, allTests)
     end
     self._after = function()
     end
-
-    print(string.format("Feature: %s", feature))
-
+    
+    print(string.format("\t****\n\t%s\n\t****", feature))
+    
     allTests()
-
+    
     local passed = self.tests - self.failures - self.ignored
-    local summary = string.format("%d Passed, %d Ignored, %d Failed", passed, self.ignored, self.failures)
-
+    local summary = string.format("\t\t\t----------\n\t\t\tPass: %d\n\t\t\tIgnore: %d\n\t\t\tFail: %d", passed, self.ignored, self.failures)
+    
     print(summary)
 end
 
@@ -50,20 +51,20 @@ end
 
 function CodeaUnit:expect(conditional)
     local message = string.format("%d: %s", (self.tests or 1), self.description)
-
+    
     local passed = function()
         if CodeaUnit.detailed then
-            print(string.format("%s -- OK", message))
+            print(string.format("%s\n-- OK", message))
         end
     end
-
+    
     local failed = function()
         self.failures = self.failures + 1
         local actual = tostring(conditional)
         local expected = tostring(self.expected)
-        print(string.format("%s -- Actual: %s, Expected: %s", message, actual, expected))
+        print(string.format("%s\n-- FAIL\n\tExpected %s, got %s", message, expected, actual))
     end
-
+    
     local notify = function(result)
         if result then
             passed()
@@ -71,17 +72,17 @@ function CodeaUnit:expect(conditional)
             failed()
         end
     end
-
+    
     local is = function(expected)
         self.expected = expected
         notify(conditional == expected)
     end
-
+    
     local isnt = function(expected)
         self.expected = expected
         notify(conditional ~= expected)
     end
-
+    
     local has = function(expected)
         self.expected = expected
         local found = false
@@ -92,7 +93,7 @@ function CodeaUnit:expect(conditional)
         end
         notify(found)
     end
-
+    
     local throws = function(expected)
         self.expected = expected
         local status, error = pcall(conditional)
@@ -103,12 +104,12 @@ function CodeaUnit:expect(conditional)
             notify(string.find(error, expected, 1, true))
         end
     end
-
+    
     return {
-        is = is,
-        isnt = isnt,
-        has = has,
-        throws = throws
+    is = is,
+    isnt = isnt,
+    has = has,
+    throws = throws
     }
 end
 
@@ -116,7 +117,7 @@ CodeaUnit.execute = function()
     for i,v in pairs(listProjectTabs()) do
         local source = readProjectTab(v)
         for match in string.gmatch(source, "function%s-(test.-%(%))") do
-            loadstring(match)()
+            load(match)()
         end
     end
 end
